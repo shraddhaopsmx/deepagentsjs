@@ -1,4 +1,4 @@
-# 🧠🤖Deep Agents
+# 🧠Deep Agents
 
 Using an LLM to call tools in a loop is the simplest form of an agent.
 This architecture, however, can yield agents that are "shallow" and fail to plan and act over longer, more complex tasks.

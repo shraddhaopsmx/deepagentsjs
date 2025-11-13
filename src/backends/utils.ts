@@ -360,6 +360,32 @@ export function formatGrepResults(
 }
 
 /**
+ * Validate regex pattern for potential ReDoS vulnerabilities.
+ * Checks for common patterns that could cause exponential backtracking.
+ *
+ * @param pattern - Regex pattern to validate
+ * @returns Error message if pattern is potentially dangerous, null if safe
+ */
+function validateRegexPattern(pattern: string): string | null {
+  // Check for nested quantifiers like (a+)+ or (a*)* which can cause exponential backtracking
+  if (/\([^)]*[*+?][^)]*\)[*+?]/.test(pattern)) {
+    return "Regex pattern contains nested quantifiers which may cause ReDoS";
+  }
+
+  // Check for quantified alternation with overlapping patterns like (a|a)*
+  if (/\([^)]*\|[^)]*\)[*+?]/.test(pattern)) {
+    return "Regex pattern contains quantified alternation which may cause ReDoS";
+  }
+
+  // Check for catastrophic backtracking patterns like (a+)+b
+  if (/\([^)]*\+[^)]*\)\+/.test(pattern)) {
+    return "Regex pattern contains nested plus quantifiers which may cause ReDoS";
+  }
+
+  return null;
+}
+
+/**
  * Search file contents for regex pattern.
  *
  * @param files - Dictionary of file paths to FileData
@@ -383,6 +409,12 @@ export function grepSearchFiles(
   glob: string | null = null,
   outputMode: "files_with_matches" | "content" | "count" = "files_with_matches",
 ): string {
+  // Validate regex pattern for ReDoS vulnerabilities
+  const validationError = validateRegexPattern(pattern);
+  if (validationError) {
+    return `Unsafe regex pattern: ${validationError}`;
+  }
+
   let regex: RegExp;
   try {
     regex = new RegExp(pattern);
@@ -444,6 +476,12 @@ export function grepMatchesFromFiles(
   path: string | null = null,
   glob: string | null = null,
 ): GrepMatch[] | string {
+  // Validate regex pattern for ReDoS vulnerabilities
+  const validationError = validateRegexPattern(pattern);
+  if (validationError) {
+    return `Unsafe regex pattern: ${validationError}`;
+  }
+
   let regex: RegExp;
   try {
     regex = new RegExp(pattern);

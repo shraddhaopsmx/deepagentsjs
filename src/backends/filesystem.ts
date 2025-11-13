@@ -453,7 +453,7 @@ export class FilesystemBackend implements BackendProtocol {
             let virtPath: string;
             if (this.virtualMode) {
               try {
-                const resolved = path.resolve(ftext);
+                const resolved = this.resolvePath(ftext);
                 const relative = path.relative(this.cwd, resolved);
                 if (relative.startsWith("..")) continue;
                 const normalizedRelative = relative.split(path.sep).join("/");
